@@ -1,5 +1,6 @@
 require 'heroku'
 require 'heroku/command'
+require 'heroku/pgbackups/client'
 require "#{File.dirname(__FILE__)}/config.rb"
 
 module HerokuBackupOrchestrator 
@@ -8,30 +9,17 @@ module HerokuBackupOrchestrator
     def initialize
       config = HerokuBackupOrchestrator::CONFIG['heroku']
       heroku_user = config['user']
+      heroku_pg_user = config['pg_user']
       heroku_password = config['password']
+      heroku_pg_password = config['pg_password']
       @client = Heroku::Client.new(heroku_user, heroku_password)
+      @client_pg = Heroku::PGBackups::Client.new("http://#{heroku_pg_user}:#{heroku_pg_password}@pgbackups.heroku.com/client")
       @app = config['app']
     end
 
     def current_pgbackup_name
-      info = @client.pgbackups.index
-      if heroku_existing_backup?(info)
-        last_backup_info = info.split("\n").last.split(" | ")
-        last_backup_id = last_backup_info[0]
-        last_backup_time = last_backup_info[1]
-        return last_backup_id
-      end
-      return nil
-    end
-
-    def current_pgbackup_time
-      info = @client.pgbackups.index
-      if heroku_existing_backup?(info)
-        last_backup_info = info.split("\n").last.split(" | ")
-        last_backup_id = last_backup_info[0]
-        last_backup_time = last_backup_info[1]
-        return last_backup_time
-      end
+      info = @client_pg.get_latest_backup
+      return info if info
       return nil
     end
 
@@ -52,7 +40,7 @@ module HerokuBackupOrchestrator
     end
 
     def destroy_pgbackup(backup_id)
-      @client.pgbackups.destroy(backup_id)
+      @client_pg.delete_backup(backup_id)
     end
 
     def capture_bundle
@@ -64,9 +52,11 @@ module HerokuBackupOrchestrator
       {:url => new_bundle_url, :name => new_bundle[:name]}
     end
     
-    def capture_pgbackup_url
-      @client.pgbackups.capture(@app)
-      return @client.pgbackups.url
+    def capture_pgbackup
+      db = ENV["DATABASE_URL"]
+      db_url = ENV[db]
+      @client_pg.create_transfer(db_url, db, nil, "BACKUP", :expire => true)
+      return @client_pg.get_latest_backup
     end
 
     private

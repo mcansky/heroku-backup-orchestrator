@@ -12,9 +12,9 @@ module HerokuBackupOrchestrator
 
     def backup_pg
       begin
-        current_backup = @heroku.current_pgbackup_name
-        @heroku.destroy_pgbackup(current_backup) if current_backup
-        new_backup_info = @heroku.capture_pgbackup_url
+        #current_backup = @heroku.current_pgbackup_name
+        #@heroku.destroy_pgbackup(current_backup) if current_backup
+        new_backup_info = @heroku.capture_pgbackup
         @s3.upload_pgbackup(new_backup_info)
       rescue Exception => e
         raise BackupFailedError, e.message
