@@ -14,7 +14,7 @@ module HerokuBackupOrchestrator
     end
 
     def current_pgbackup_name
-      info = capture_heroku_command 'pgbackups'
+      info = @client.pgbackups.index
       if heroku_existing_backup?(info)
         last_backup_info = info.split("\n").last.split(" | ")
         last_backup_id = last_backup_info[0]
@@ -25,7 +25,7 @@ module HerokuBackupOrchestrator
     end
 
     def current_pgbackup_time
-      info = capture_heroku_command 'pgbackups'
+      info = @client.pgbackups.index
       if heroku_existing_backup?(info)
         last_backup_info = info.split("\n").last.split(" | ")
         last_backup_id = last_backup_info[0]
@@ -52,7 +52,7 @@ module HerokuBackupOrchestrator
     end
 
     def destroy_pgbackup(backup_id)
-      heroku_command 'pgbackups:destroy', backup_id
+      @client.pgbackups.destroy(backup_id)
     end
 
     def capture_bundle
@@ -65,8 +65,8 @@ module HerokuBackupOrchestrator
     end
     
     def capture_pgbackup_url
-      heroku_command 'pgbackups:capture'
-      return capture_heroku_command 'pgbackups:url'
+      @client.pgbackups.capture(@app)
+      return @client.pgbackups.url
     end
 
     private
