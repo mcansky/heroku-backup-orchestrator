@@ -12,7 +12,14 @@ module HerokuBackupOrchestrator
       @bucket = config['bucket']
       @app = HerokuBackupOrchestrator::CONFIG['heroku']['app']
     end
-  
+
+    def upload_pgbackup(pgbackup_url)
+      Base.establish_connection!(:access_key_id => @key,:secret_access_key => @secret)
+      filename = "#{Heroku::Command::Base.selected_application}_#{Time.now.xmlschema}.dump"
+      S3Object.store(filename, URI.parse(pgbackup_url), @bucket)
+      Base.disconnect!
+    end
+
     def upload_bundle(bundle_info)
       Base.establish_connection!(:access_key_id => @key,:secret_access_key => @secret)
       filename = "heroku_backup_orchestrator/#{@app}/#{bundle_info[:name]}.tar.gz"

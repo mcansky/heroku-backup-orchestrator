@@ -61,7 +61,7 @@ module HerokuBackupOrchestrator
       content_type :json
       begin
         backup_handler = BackupHandler.new
-        backup_handler.backup
+        backup_handler.backup_pg
         {:status => 'success'}.to_json
       rescue BackupFailedError
         {:status => 'error', :message => $!.message }.to_json

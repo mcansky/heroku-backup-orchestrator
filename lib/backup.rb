@@ -9,7 +9,18 @@ module HerokuBackupOrchestrator
       @heroku = HerokuAdapter.new
       @s3 = S3Adapter.new
     end
-    
+
+    def backup_pg
+      begin
+        current_backup = @heroku.current_pgbackup_name
+        @heroku.destroy_pgbackup(current_backup) if current_backup
+        new_backup_info = @heroku.capture_pgbackup_url
+        @s3.upload_pgbackup(new_backup_info)
+      rescue Exception => e
+        raise BackupFailedError, e.message
+      end
+    end
+
     def backup
       begin
         current_bundle = @heroku.current_bundle_name
@@ -20,5 +31,6 @@ module HerokuBackupOrchestrator
         raise BackupFailedError, e.message
       end
     end
+
   end
 end
