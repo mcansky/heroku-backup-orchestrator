@@ -7,7 +7,7 @@ task :cron do
   begin
     log.debug("Backing up #{@heroku_app} ...")
     backup_handler = HerokuBackupOrchestrator::BackupHandler.new
-    backup_handler.backup
+    backup_handler.backup_pg
     log.debug("Backup finished successfully")
   rescue HerokuBackupOrchestrator::BackupFailedError
     log.error("Backup failed: #{$!.message}")
