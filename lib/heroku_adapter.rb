@@ -1,6 +1,6 @@
 require 'heroku'
 require 'heroku/command'
-require 'heroku/pgbackups/client'
+require 'pgbackups/client'
 require "#{File.dirname(__FILE__)}/config.rb"
 
 module HerokuBackupOrchestrator 
@@ -57,27 +57,6 @@ module HerokuBackupOrchestrator
       db_url = ENV[db]
       @client_pg.create_transfer(db_url, db, nil, "BACKUP", :expire => true)
       return @client_pg.get_latest_backup
-    end
-
-    private
-
-    def heroku_command(*cmds)
-      Heroku::Command::Base.command(*cmds)
-    end
-
-    def capture_heroku_command(*cmds)
-      stdout = STDOUT
-      StringIO.new.tap do |out|
-        def out.flush ; end
-        $stdout = out
-        heroku_command(*cmds)
-      end.string.chomp
-    ensure
-      $stdout = stdout
-    end
-
-    def heroku_existing_backup?(info)
-      info !~ /no backups/i
     end
   end
 end
