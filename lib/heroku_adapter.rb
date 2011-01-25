@@ -1,5 +1,5 @@
 require 'heroku'
-require 'heroku/commands/base'
+require 'heroku/command'
 require "#{File.dirname(__FILE__)}/config.rb"
 
 module HerokuBackupOrchestrator 
