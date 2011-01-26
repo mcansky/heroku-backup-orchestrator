@@ -1,5 +1,4 @@
 require 'heroku'
-require 'heroku/command'
 require 'pgbackups/client'
 require "#{File.dirname(__FILE__)}/config.rb"
 
