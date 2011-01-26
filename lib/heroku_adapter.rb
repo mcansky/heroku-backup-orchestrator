@@ -1,5 +1,5 @@
 require 'heroku'
-require 'pgbackups/client'
+require 'heroku/lib/pgbackups/client'
 require "#{File.dirname(__FILE__)}/config.rb"
 
 module HerokuBackupOrchestrator 
